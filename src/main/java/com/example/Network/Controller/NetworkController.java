@@ -6,6 +6,10 @@ import java.io.File;
 import java.net.URL;
 import java.util.*;
 
+import com.example.Network.Services.DefaultNetworkervice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.example.Network.CMD;
 import com.example.Network.Repository.NetworkRepository;
 import com.example.Network.Exceptions.ResourceNotFoundException;
@@ -21,6 +25,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.example.Network.Models.Network;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,19 +39,22 @@ import com.example.Network.Services.NetworkService;
 @RestController
 @RequestMapping("/Network")
 public class NetworkController {
+    private static final Logger LOG = LoggerFactory.getLogger(NetworkController.class);
 
     @Autowired
     private NetworkRepository networkRepository;
     @Autowired
-   private NetworkService networkService;
+    private NetworkService networkService;
 
     @PostMapping("/create")
+    @Async("threadPoolTaskExecutor")
     public @ResponseBody
     String addNewNetwork (@Valid @RequestParam String technology , @RequestParam String owner , @RequestParam String service ,
                           @RequestParam String provider , @RequestParam String DateOfOperation , @RequestParam String penetrationLevel,@RequestParam String location, @RequestParam String otherFeatures) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
 
+        LOG.info("Creating network ");
         Network n = new Network();
         n.setTechnology(technology);
         n.setService(service);
@@ -56,12 +64,15 @@ public class NetworkController {
         n.setOtherFeatures(otherFeatures);
         n.setLocation(location);
         networkRepository.save(n);
+
         return "Saved";
     }
 
     @GetMapping("/createTest")
+    @Async("threadPoolTaskExecutor")
     public @ResponseBody
-    List<Network> addNewNetwork () {
+    CompletableFuture<List<Network>> addNewNetwork () {
+        LOG.info("Creating test network database ");
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
 
@@ -116,39 +127,51 @@ public class NetworkController {
             n.setOwner(owner);
             n.setLocation(location);
             networks.add(n);
+            networkRepository.save(n);
         }
 
-        return networks;
+        return CompletableFuture.completedFuture(networks);
     }
 
     @GetMapping("/net/{id}")
+    @Async("threadPoolTaskExecutor")
     public CompletableFuture<Network> getNetworkById(@PathVariable Long id) throws InterruptedException {
         return networkService.getNetworkById(id);
     }
 
     @PostMapping("/net/update")
+    @Async("threadPoolTaskExecutor")
     public void createNetwork() throws Exception {
         networkService.createNetwork();
     }
 
     @GetMapping("/net/id/{email}")
+    @Async("threadPoolTaskExecutor")
     public Network getNetworkByTechnology(@PathVariable String technology) throws InterruptedException {
         return networkService.getNetworkByTechnology(technology);
     }
 
+
+
     @GetMapping
-    public List<Network> getAll() {
-        return networkRepository.findAll();
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> getAll() {
+        LOG.info("return all networks ");
+        return CompletableFuture.completedFuture(networkRepository.findAll());
     }
 
     @GetMapping(value = "/{id}")
-    public Network getOne(@PathVariable Long id) {
-        return networkRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException());
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<Network> getOne(@PathVariable Long id) {
+        LOG.info("Return network with Id ", id);
+        Network n = networkRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+        return CompletableFuture.completedFuture(n);
     }
 
     @PutMapping(value = "/{id}")
-    public Network update(@PathVariable Long id, @RequestBody Network updatedNetwork) {
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<Network> update(@PathVariable Long id, @RequestBody Network updatedNetwork) {
+        LOG.info("Changing network with id  ",id);
         Network network = networkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException());
         network.setDateOfOperation(updatedNetwork.getDateOfOperation());
@@ -159,50 +182,66 @@ public class NetworkController {
         network.setProvider(updatedNetwork.getProvider());
         network.setService(updatedNetwork.getService());
         network.setTechnology(updatedNetwork.getTechnology());
-        return networkRepository.save(network);
+        networkRepository.save(network);
+        return CompletableFuture.completedFuture(network);
     }
 
     @DeleteMapping(value = "/{id}")
+    @Async("threadPoolTaskExecutor")
     @ResponseStatus(code = HttpStatus.ACCEPTED)
-    public void delete(@PathVariable Long id) {
+    public String delete(@PathVariable Long id) {
+        LOG.info("deleting network with id ", id);
         Network network = networkRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException());
         networkRepository.delete(network);
+        return "Delete was successful";
     }
 
     @GetMapping("/searchByTechnology")
-    public List<Network> searchByTechnology(@RequestParam(name = "technology") String Technology) {
-        return networkRepository.findByTechnology(Technology);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByTechnology(@RequestParam(name = "technology") String Technology) {
+        LOG.info("Search network by technology ", Technology);
+        return CompletableFuture.completedFuture(networkRepository.findByTechnology(Technology));
 
     }
 
     @GetMapping("/searchByLocation")
-    public List<Network> searchByLocation(@RequestParam(name = "location") String Location) {
-        return networkRepository.findByLocation(Location);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByLocation(@RequestParam(name = "location") String Location) {
+        LOG.info("Search network by location ", Location);
+        return CompletableFuture.completedFuture(networkRepository.findByLocation(Location));
 
     }
 
     @GetMapping("/searchByOwner")
-    public List<Network> searchByOwner(@RequestParam(name = "owner") String Owner) {
-        return networkRepository.findByOwner(Owner);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByOwner(@RequestParam(name = "owner") String Owner) {
+        LOG.info("Search network by owner ", Owner);
+        return CompletableFuture.completedFuture(networkRepository.findByOwner(Owner));
 
     }
 
     @GetMapping("/searchByService")
-    public List<Network> searchByService(@RequestParam(name = "service") String Service) {
-        return networkRepository.findByService(Service);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByService(@RequestParam(name = "service") String Service) {
+        LOG.info("Search network by service ", Service);
+        return CompletableFuture.completedFuture(networkRepository.findByService(Service));
 
     }
 
     @GetMapping("/searchByProvider")
-    public List<Network> searchByProvider(@RequestParam(name = "provider") String Provider) {
-        return networkRepository.findByProvider(Provider);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByProvider(@RequestParam(name = "provider") String Provider) {
+        LOG.info("Search network by provider ", Provider);
+        return CompletableFuture.completedFuture(networkRepository.findByProvider(Provider));
 
     }
 
     @GetMapping("/searchByPenetrationLevel")
-    public List<Network> searchByPenetrationLevel(@RequestParam(name = "penetrationLevel") String PenetrationLevel) {
-        return networkRepository.findByPenetrationLevel(PenetrationLevel);
+    @Async("threadPoolTaskExecutor")
+    public CompletableFuture<List<Network>> searchByPenetrationLevel(@RequestParam(name = "penetrationLevel") String PenetrationLevel) {
+        LOG.info("Search network by penetration level ", PenetrationLevel);
+        return CompletableFuture.completedFuture(networkRepository.findByPenetrationLevel(PenetrationLevel));
 
     }
 
@@ -220,7 +259,9 @@ public class NetworkController {
     }*/
 
     @GetMapping("/convert")
+    @Async("threadPoolTaskExecutor")
     public String convert3() throws Exception{
+        LOG.info("Shapefile to json ");
         CMD.command("stations.json","C:\\Users\\User\\Desktop\\shp\\stations.shp");
 
         return "file converted- name: stations.json" ;
