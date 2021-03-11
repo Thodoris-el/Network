@@ -1,4 +1,4 @@
-package com.example.Network;
+package com.example.Network.Exceptions;
 
 
 import org.springframework.http.HttpStatus;
