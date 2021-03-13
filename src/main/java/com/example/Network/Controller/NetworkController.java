@@ -162,9 +162,9 @@ public class NetworkController {
 
     @GetMapping(value = "/{id}")
     @Async("threadPoolTaskExecutor")
-    public CompletableFuture<Network> getOne(@PathVariable Long id) {
+    public CompletableFuture<Network> getOne(@PathVariable Long id)  {
         LOG.info("Return network with Id ", id);
-        Network n = networkRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException());
+        Network n = networkRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("cant find network with id: "+id));
         return CompletableFuture.completedFuture(n);
     }
 
@@ -173,7 +173,7 @@ public class NetworkController {
     public CompletableFuture<Network> update(@PathVariable Long id, @RequestBody Network updatedNetwork) {
         LOG.info("Changing network with id  ",id);
         Network network = networkRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException());
+                .orElseThrow(() -> new ResourceNotFoundException("Cant find network with id: " + id));
         network.setDateOfOperation(updatedNetwork.getDateOfOperation());
         network.setLocation(updatedNetwork.getLocation());
         network.setOtherFeatures(updatedNetwork.getOtherFeatures());
@@ -192,7 +192,7 @@ public class NetworkController {
     public String delete(@PathVariable Long id) {
         LOG.info("deleting network with id ", id);
         Network network = networkRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException());
+                .orElseThrow(() -> new ResourceNotFoundException("cant find network with id: "+id));
         networkRepository.delete(network);
         return "Delete was successful";
     }
@@ -260,9 +260,9 @@ public class NetworkController {
 
     @GetMapping("/convert")
     @Async("threadPoolTaskExecutor")
-    public String convert3() throws Exception{
+    public String convert() throws Exception{
         LOG.info("Shapefile to json ");
-        CMD.command("stations.json","C:\\Users\\User\\Desktop\\shp\\stations.shp");
+        CMD.command("C:\\Users\\User\\Desktop\\shp\\stations2.json","C:\\Users\\User\\Desktop\\shp\\stations.shp");
 
         return "file converted- name: stations.json" ;
     }
