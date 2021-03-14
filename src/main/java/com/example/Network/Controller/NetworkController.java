@@ -260,11 +260,18 @@ public class NetworkController {
 
     @GetMapping("/convert")
     @Async("threadPoolTaskExecutor")
-    public String convert() throws Exception{
+    public String convert(@RequestParam(name = "file") String nameFile) throws Exception {
         LOG.info("Shapefile to json ");
-        CMD.command("C:\\Users\\User\\Desktop\\shp\\stations2.json","C:\\Users\\User\\Desktop\\shp\\stations.shp");
+        try {
+            File file = new File("C:\\Users\\User\\Desktop\\shp\\" + nameFile + ".shp");
 
-        return "file converted- name: stations.json" ;
+
+            CMD.command("C:\\Users\\User\\Desktop\\shp\\" + nameFile + ".json", "C:\\Users\\User\\Desktop\\shp\\" + nameFile + ".shp");
+
+            return "file converted- name: stations.json";
+        }catch (Exception e){
+            return "File not found";
+        }
     }
 
     /*@GetMapping("/convert2")
