@@ -26,7 +26,6 @@ public class Network {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
-
     @NotNull(message = "Technology must be provided")
     private String technology;
 
@@ -39,7 +38,6 @@ public class Network {
     @NotNull(message = "Provider must be provided")
     private String provider;
 
-    //@NotNull(message = "Operation Date must be provided")
     private Date DateOfOperation;
 
     @NotNull(message = "Penetration level must be provided")

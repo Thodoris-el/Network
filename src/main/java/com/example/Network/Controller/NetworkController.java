@@ -151,8 +151,6 @@ public class NetworkController {
         return networkService.getNetworkByTechnology(technology);
     }
 
-
-
     @GetMapping
     @Async("threadPoolTaskExecutor")
     public CompletableFuture<List<Network>> getAll() {
@@ -243,22 +241,7 @@ public class NetworkController {
         LOG.info("Search network by penetration level ", PenetrationLevel);
         return CompletableFuture.completedFuture(networkRepository.findByPenetrationLevel(PenetrationLevel));
 
-    }
-
-
-    /*@GetMapping("/convert")
-    public String convert() throws Exception {
-        URL url = getClass().getResource("/stations.shp");
-        File file = new File("C:\\Users\\User\\Desktop\\ΕΜΠ\\9o e3amhno\\plhroforiaka\\maven\\Network\\src\\main\\java\\com\\example\\Network\\stations.shp");
-        String dest = "C:\\Users\\User\\Desktop\\ΕΜΠ\\9o e3amhno\\plhroforiaka\\maven\\Network\\src\\main\\java\\com\\example\\Network\\destination";
-        ShapefileToJson.openShapeFile(file);
-        ShapefileToJson.iterate(file,dest);
-
-        return "file converted";
-
-    }*/
-
-    @GetMapping("/convert")
+    }    @GetMapping("/convert")
     @Async("threadPoolTaskExecutor")
     public String convert(@RequestParam(name = "file") String nameFile) throws Exception {
         LOG.info("Shapefile to json ");
@@ -274,38 +257,6 @@ public class NetworkController {
         }
     }
 
-    /*@GetMapping("/convert2")
-    public String convert2() throws Exception {
-        File inFile = new File("C:\\Users\\User\\Desktop\\ΕΜΠ\\9o e3amhno\\plhroforiaka\\maven\\Network\\src\\main\\java\\com\\example\\Network\\stations.shp");
-        File outFile = new File("C:\\Users\\User\\Desktop\\ΕΜΠ\\9o e3amhno\\plhroforiaka\\maven\\Network\\src\\main\\java\\com\\example\\Network\\stations.csv");
-        outFile.createNewFile();
-// Read
-        DataStore inputDataStore = DataStoreFinder.getDataStore(
-                Collections.singletonMap("url", URLs.fileToUrl(inFile)));
 
-        String inputTypeName = inputDataStore.getTypeNames()[0];
-        SimpleFeatureType inputType = inputDataStore.getSchema(inputTypeName);
-
-        FeatureSource<SimpleFeatureType, SimpleFeature>
-                source = inputDataStore.getFeatureSource(inputTypeName);
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature>
-                inputFeatureCollection = source.getFeatures();
-
-// Write
-        FileDataStore newDataStore = FileDataStoreFinder.getDataStore(outFile);
-
-        newDataStore.createSchema(inputType);
-        String typeName = newDataStore.getTypeNames()[0];
-
-        SimpleFeatureStore featureStore =
-                (SimpleFeatureStore) newDataStore.getFeatureSource(typeName);
-
-        featureStore.addFeatures(inputFeatureCollection);
-
-        return "file converted";
-
-    }
-*/
 
 }
